@@ -6,7 +6,14 @@
     <title>中医九种体质辨识测试</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
     <script>
+        // === 四档界限：倾向→中度→显著（重度） ===
+        const CUTOFF_TEND   = 30;  // ≥30 轻度倾向
+        const CUTOFF_MAIN   = 50;  // ≥50 中度（旧40↑）
+        const CUTOFF_SEVERE = 70;  // ≥70 重度
+
         tailwind.config = {
             theme: {
                 extend: {
@@ -27,10 +34,9 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .bg-paper {
-                background-image: url('https://fastly.picsum.photos/id/998/5000/3338.jpg?hmac=yaE-JjQeaQRYhB_8W8mnYhtR_neSbokA38UUjNgxbDw');
-                /*background-image: url("/TCM-body-constitution-Test
-/img_source/gufeng_background3_light.png"); */
+            .bg-paper { 
+                background-image: url('https://fastly.picsum.photos/id/998/5000/3338.jpg?hmac=yaE-JjQeaQRYhB_8W8mnYhtR_neSbokA38UUjNgxbDw'); 
+                /* background-image: url("./img_source/gufeng_background3_light.png");*/
                 background-size: cover;
                 background-attachment: fixed;
                 background-position: center;
@@ -60,6 +66,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body class="bg-paper font-song text-dark scroll-smooth">
     <!-- 页面容器 -->
@@ -77,15 +84,21 @@
         </header>
 
         <!-- 社群 logo -->
-        <img src="/TCM-body-constitution-Test
-/img_source/logo_tou_light.png" alt="社群"
+        <img src="/TCM-body-constitution-Test/img_source/logo_tou_light.png" alt="社群"
             class="fixed top-2 right-2 w-6 h-6 opacity-80 pointer-events-none z-50">
-
 
         <!-- 主内容区 -->
         <main class="flex-grow container mx-auto px-3 py-6 md:py-12">
             <!-- 测试引导页 -->
             <section id="intro" class="block content-center bg-overlay rounded-lg shadow-xl p-5 md:p-8 border-2 border-secondary">
+            <!-- =①= 顶部温馨提示卡（新增） -->
+                <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-3 mb-4 rounded">
+                    <strong>温馨提示：</strong><br>
+                    体质倾向≠疾病；30-49为“轻度倾向”，50-69为“中度”，≥70为“显著”。<br>
+                    请按近一年<strong>真实感受</strong>作答，勿全部选“有时”。
+                </div>
+                <!-- =①= 结束 -->
+
                 <div class="text-center mb-6">
                     <h2 class="text-[clamp(1.3rem,4vw,1.8rem)] font-kai font-bold text-primary mb-3">测试说明</h2>
                     <div class="w-20 h-1 bg-accent mx-auto mb-4"></div>
@@ -178,47 +191,61 @@
             { id: 'B2', text: '您容易气短（呼吸短促，接不上气）吗？', type: '气虚质' },
             { id: 'B3', text: '您说话的声音低弱无力吗？', type: '气虚质' },
             { id: 'B4', text: '您感到头晕或站起时容易眩晕吗？', type: '气虚质' },
+            { id: 'B5', text: '是否容易为未发生的事担心，反复思考，思虑过多，甚至影响到睡眠？', type: '气虚质' },
+            { id: 'X3', text: '您的记忆力如何？（反向计分：5分表示记忆力很好）', type: '气虚质' },
+
             { id: 'C1', text: '您手脚发凉吗？（尤其是冬天，甚至夏天也凉）', type: '阳虚质' },
-            { id: 'C2', text: '您胃脘部、背部或腰膝部怕冷吗？（如不喜欢吹空调，喜欢喝热饮）', type: '阳虚质' },
+            { id: 'C2', text: '您胃部、背部或腰膝部怕冷吗？', type: '阳虚质' },
             { id: 'C3', text: '您比一般人耐受不了寒冷（如冬天的寒冷，夏天的冷空调、电扇）吗？', type: '阳虚质' },
-            { id: 'C4', text: '您容易腹泻吗？（尤其是吃凉的食物后）', type: '阳虚质' },
+            { id: 'C4', text: '喝冷水或吃凉性食物（如西瓜、梨）后，是否容易感到胃部不适或腹泻？', type: '阳虚质' },
+            { id: 'C5', text: '是否倾向于安静独处，对外界活动兴趣不大，给人“沉静”的感觉？', type: '阳虚质' },
+            { id: 'C6', text: '男性是否有性欲淡漠、勃起障碍？女性是否有月经推迟、痛经、小腹发凉？', type: '阳虚质' },
+            { id: 'C7', text: '是否常常觉得情绪不高，对很多事情都提不起兴趣，缺乏活力？', type: '阳虚质' },
+            { id: 'X1', text: '您的性格偏于内向吗？', type: '阳虚质' },
+
             { id: 'D1', text: '您感到手脚心发热吗？', type: '阴虚质' },
             { id: 'D2', text: '您感觉身体、脸上有发热感吗？', type: '阴虚质' },
             { id: 'D3', text: '您皮肤或口唇干燥吗？', type: '阴虚质' },
             { id: 'D4', text: '您口唇的颜色比一般人红吗？', type: '阴虚质' },
             { id: 'D5', text: '您容易便秘或大便干燥吗？', type: '阴虚质' },
+            { id: 'X2', text: '您容易失眠或多梦吗？', type: '阴虚质' },
+
             { id: 'E1', text: '您感到胸闷或腹部胀满吗？', type: '痰湿质' },
-            { id: 'E2', text: '您感到身体沉重不轻松或不爽快吗？', type: '痰湿质' },
+            { id: 'E2', text: '您感到身体沉重不轻松或不爽快，头脑像被布裹住一样不清醒吗？', type: '痰湿质' },
             { id: 'E3', text: '您腹部肥满松软吗？', type: '痰湿质' },
             { id: 'E4', text: '您有额部油脂分泌多的现象吗？', type: '痰湿质' },
-            { id: 'E5', text: '您上眼睑比别人肿（有轻微隆起的现象）吗？', type: '痰湿质' },
+            { id: 'E6', text: '您的性格比较温和、做事不紧不慢，或许容易被人称为“老好人”角色吗？', type: '痰湿质' },
+            { id: 'E7', text: '您上眼睑比别人肿（有轻微隆起的现象）吗？', type: '痰湿质' },
+
             { id: 'F1', text: '您面部或鼻部有油腻感或者油光发亮吗？', type: '湿热质' },
             { id: 'F2', text: '您容易生痤疮或疮疖吗？', type: '湿热质' },
             { id: 'F3', text: '您感到口苦或嘴里有异味吗？', type: '湿热质' },
             { id: 'F4', text: '您大便黏滞不爽、有解不尽的感觉吗？', type: '湿热质' },
             { id: 'F5', text: '您小便时尿道有发热感、尿色浓（深）吗？', type: '湿热质' },
+            { id: 'F6', text: '您容易心情烦躁，尤其是天气湿热时加重吗？', type: '湿热质' },
+            { id: 'F7', text: '您是否常感觉身体困重，精神不振，即使睡眠充足也提不起劲？', type: '湿热质' },
+
             { id: 'G1', text: '您的皮肤在不知不觉中会出现青紫瘀斑（皮下出血）吗？', type: '血瘀质' },
             { id: 'G2', text: '您两颧部有细微红丝吗？', type: '血瘀质' },
             { id: 'G3', text: '您身体上有哪里疼痛吗？（尤其是固定位置的刺痛）', type: '血瘀质' },
             { id: 'G4', text: '您面色晦暗或容易出现褐斑吗？', type: '血瘀质' },
             { id: 'G5', text: '您容易有黑眼圈吗？', type: '血瘀质' },
+
             { id: 'H1', text: '您感到闷闷不乐、情绪低沉吗？', type: '气郁质' },
             { id: 'H2', text: '您容易精神紧张、焦虑不安吗？', type: '气郁质' },
             { id: 'H3', text: '您多愁善感、感情脆弱吗？', type: '气郁质' },
             { id: 'H4', text: '您容易感到害怕或受到惊吓吗？', type: '气郁质' },
             { id: 'H5', text: '您胁肋部或乳房胀痛吗？', type: '气郁质' },
+            { id: 'H6', text: '您是否感觉咽喉部有异物感（像有东西堵着），咳不出也咽不下？', type: '气郁质' },
+
             { id: 'I1', text: '您没有感冒时也会打喷嚏吗？', type: '特禀质' },
             { id: 'I2', text: '您没有感冒时也会鼻塞、流鼻涕吗？', type: '特禀质' },
             { id: 'I3', text: '您有因季节变化、温度变化或异味等原因而咳嗽的现象吗？', type: '特禀质' },
             { id: 'I4', text: '您容易过敏（对药物、食物、气味、花粉或在季节交替、气候变化时）吗？', type: '特禀质' },
             { id: 'I5', text: '您的皮肤容易起荨麻疹（风团、风疹块、风疙瘩）吗？', type: '特禀质' },
+
             { id: 'A1', text: '您精力充沛吗？（反向计分题）', type: '平和质' },
-            { id: 'A2', text: '您容易适应季节变化吗？（反向计分）', type: '平和质' },
-            { id: 'X1', text: '您的性格偏于内向吗？', type: '气虚质' },
-            { id: 'X2', text: '您容易失眠或多梦吗？', type: '阴虚质' },
-            { id: 'X3', text: '您的记忆力如何？（反向计分：5分表示记忆力很好）', type: '气虚质' },
-            { id: 'X4', text: '您喜欢安静、独处，还是喜欢热闹、交际？（1分喜静，5分喜动）', type: '气郁质' },
-            { id: 'X5', text: '您对寒冷的耐受度如何？（1分非常怕冷，5分非常耐寒）', type: '阳虚质' }
+            { id: 'A2', text: '您容易适应季节变化吗？（反向计分）', type: '平和质' }          
         ];
 
         // 体质介绍数据
@@ -278,10 +305,10 @@
         const constitutionQuestionCount = {
             '平和质': 2,
             '气虚质': 6,
-            '阳虚质': 5,
+            '阳虚质': 8,
             '阴虚质': 6,
-            '痰湿质': 5,
-            '湿热质': 5,
+            '痰湿质': 7,
+            '湿热质': 7,
             '血瘀质': 5,
             '气郁质': 6,
             '特禀质': 5
@@ -309,6 +336,12 @@
 
         // 开始测试
         startTestBtn.addEventListener('click', () => {
+            /* ===== 洗牌开始 ===== */
+            const attention = questions.shift();      // 取出注意力题（如开启）
+            shuffleArray(questions);                  // 洗后面全部
+            questions.unshift(attention);             // 把注意力题放回第一题
+            /* ===== 洗牌结束 ===== */
+
             introSection.classList.add('hidden');
             questionnaireSection.classList.remove('hidden');
             loadQuestion(currentQuestionIndex);
@@ -375,6 +408,16 @@
             calculateScores();
             showResult();
         });
+
+        // =工具= Fisher-Yates 洗牌（不含注意力题）
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
 
         // 加载题目（保持选项框固定尺寸）
         function loadQuestion(index) {
@@ -459,7 +502,7 @@
             });
         }
 
-        // 显示结果（保持居中排版）
+        // 显示结果（保持居中排版）  =⑥= 标准差守门（防全3/全4答卷）
         function showResult() {
             questionnaireSection.classList.add('hidden');
             resultSection.classList.remove('hidden');
@@ -468,123 +511,91 @@
             const constitutionResults = {};
             let mainConstitutions = [];
             let pingheScore = 0;
+            const scoresArr = [];                       // 用于算标准差
 
+            // 1. 先收集 9 个转化分
             Object.keys(constitutionScores).forEach(type => {
                 const rawScore = constitutionScores[type];
-                const questionCount = constitutionQuestionCount[type];
+                const questionCount = constitutionQuestionCount[type] || 0;
                 // 转化分 = (原始分 - 题目数) / (题目数 × 4) × 100
                 const convertedScore = Math.round(((rawScore - questionCount) / (questionCount * 4)) * 100);
                 constitutionResults[type] = {
                     rawScore,
                     convertedScore,
-                    isMain: false
+                    isMain: false, 
+                    level: '正常'
                 };
 
                 // 平和质判定
                 if (type === '平和质') {
                     pingheScore = convertedScore;
+                    scoresArr.push(convertedScore);
                 }
             });
 
-            // 判定体质类型
+            // 2. 算标准差
+            const avg = scoresArr.reduce((a, b) => a + b, 0) / scoresArr.length;
+            const stdDev = Math.sqrt(scoresArr.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b, 0) / scoresArr.length);
+            const isLowDev = stdDev < 8;   // **经验阈值**
+
+
+
+            // 判定体质类型  // =⑦= 新三档+平和质守门（旧40→50，旧60→50）
+            Object.keys(constitutionResults).forEach(type => {
+                const s = constitutionResults[type].convertedScore;
+                if (s >= CUTOFF_SEVERE) { constitutionResults[type].level = '重度'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
+                else if (s >= CUTOFF_MAIN) { constitutionResults[type].level = '中度'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
+                else if (s >= CUTOFF_TEND) { constitutionResults[type].level = '轻度倾向'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
+            });
+
+
             let isPinghe = false;
-            if (pingheScore >= 60) {
-                let allOtherLow = true;
-                Object.keys(constitutionResults).forEach(type => {
-                    if (type !== '平和质' && constitutionResults[type].convertedScore >= 30) {
-                        allOtherLow = false;
-                    }
-                });
-                if (allOtherLow) {
-                    isPinghe = true;
-                    mainConstitutions.push('平和质');
-                    constitutionResults['平和质'].isMain = true;
-                }
+            if (pingheScore >= 50) {                      // **旧60→50**
+                const otherMains = mainConstitutions.filter(t => t !== '平和质');
+                if (otherMains.length === 0) { isPinghe = true; mainConstitutions = ['平和质']; }
+            }
+            if (!isPinghe && mainConstitutions.length === 0) {
+                mainConstitutions.push('平和质（倾向）');
             }
 
-            // 偏颇体质判定
-            if (!isPinghe) {
-                Object.keys(constitutionResults).forEach(type => {
-                    if (type !== '平和质' && constitutionResults[type].convertedScore >= 40) {
-                        mainConstitutions.push(type);
-                        constitutionResults[type].isMain = true;
-                    }
-                });
-
-                // 如果没有主要体质，找倾向体质
-                if (mainConstitutions.length === 0) {
-                    Object.keys(constitutionResults).forEach(type => {
-                        if (type !== '平和质' && constitutionResults[type].convertedScore >= 30) {
-                            mainConstitutions.push(type);
-                            constitutionResults[type].isMain = true;
-                        }
-                    });
-                }
-
-                // 如果还是没有，默认平和质倾向
-                if (mainConstitutions.length === 0) {
-                    mainConstitutions.push('平和质（倾向）');
-                    constitutionResults['平和质'].isMain = true;
-                }
-            }
-
-            // 生成结果摘要
+            // =⑧= 摘要追加低区分提示
+            let summaryHtml = '';
             if (mainConstitutions.length === 1) {
-                resultSummary.innerHTML = `您的主要体质类型为：<span class="text-primary font-bold">${mainConstitutions[0]}</span>`;
+                summaryHtml = `您的体质类型为：<span class="text-primary font-bold">${mainConstitutions[0]}</span>`;
             } else {
-                resultSummary.innerHTML = `您的体质为兼夹体质，主要类型为：<span class="text-primary font-bold">${mainConstitutions.join('、')}</span>`;
+                summaryHtml = `您的体质为兼夹体质，主要类型为：<span class="text-primary font-bold">${mainConstitutions.join('、')}</span>`;
             }
+            if (isLowDev) summaryHtml += '<br><span class="text-amber-700 text-sm">提示：回答区分度较低，结果仅供参考。</span>';
+            resultSummary.innerHTML = summaryHtml;
 
-            // 生成体质详情
+
+            // =⑨= 卡片文案软化（平和质也分三档）
             constitutionDetails.innerHTML = '';
             Object.keys(constitutionResults).forEach(type => {
-                const result = constitutionResults[type];
+                const res = constitutionResults[type];
+                if (res.level === '正常' && !res.isMain) return;   // 只打印≥30 或平和
                 const intro = constitutionIntro[type];
-
-                const detailDiv = document.createElement('div');
-                detailDiv.className = `${result.isMain ? 'border-2 border-primary' : 'border border-secondary/30'} rounded-lg p-4 bg-light/50 mx-auto max-w-sm`;
-
-                const title = document.createElement('h3');
-                title.className = `text-[clamp(1rem,3vw,1.2rem)] font-kai font-bold ${result.isMain ? 'text-primary' : 'text-dark/80'} mb-2 text-center`;
-                title.textContent = `${type}（转化分：${result.convertedScore}分）`;
-
-                const scoreDesc = document.createElement('p');
-                scoreDesc.className = 'mb-3 text-xs md:text-sm italic text-center';
+                const card = document.createElement('div');
+                card.className = `${res.isMain ? 'border-2 border-primary' : 'border border-secondary/30'} rounded-lg p-4 bg-light/50 mx-auto max-w-sm`;
+                let levelText = res.level;
                 if (type === '平和质') {
-                    scoreDesc.textContent = result.convertedScore >= 60 ? '体质平和，健康状态良好' : '体质倾向平和，但仍有偏颇';
-                } else if (result.convertedScore >= 40) {
-                    scoreDesc.textContent = '属于该体质类型（明显偏颇）';
-                } else if (result.convertedScore >= 30) {
-                    scoreDesc.textContent = '倾向该体质类型（轻度偏颇）';
-                } else {
-                    scoreDesc.textContent = '不属于该体质类型';
+                levelText = res.convertedScore >= 70 ? '非常平和' :
+                            res.convertedScore >= 50 ? '平和' : '基本平和';
                 }
+                card.innerHTML = `
+                <h3 class="text-[clamp(1rem,3vw,1.2rem)] font-kai font-bold ${res.isMain ? 'text-primary' : 'text-dark/80'} mb-2 text-center">
+                    ${type}（转化分：${res.convertedScore}分）
+                </h3>
+                <p class="mb-3 text-xs md:text-sm italic text-center">${levelText}</p>
+                <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">体质介绍：</h4>
+                <p class="mb-3 leading-relaxed text-sm md:text-base text-center">${intro.介绍}</p>
+                <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">主要特征：</h4>
+                <p class="leading-relaxed text-sm md:text-base text-center">${intro.特征}</p>
+                `;
+                constitutionDetails.appendChild(card);
+            }
+        );
 
-                const introTitle = document.createElement('h4');
-                introTitle.className = 'font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center';
-                introTitle.textContent = '体质介绍：';
-
-                const introContent = document.createElement('p');
-                introContent.className = 'mb-3 leading-relaxed text-sm md:text-base text-wrap text-center';
-                introContent.textContent = intro.介绍;
-
-                const featureTitle = document.createElement('h4');
-                featureTitle.className = 'font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center';
-                featureTitle.textContent = '主要特征：';
-
-                const featureContent = document.createElement('p');
-                featureContent.className = 'leading-relaxed text-sm md:text-base text-wrap text-center';
-                featureContent.textContent = intro.特征;
-
-                detailDiv.appendChild(title);
-                detailDiv.appendChild(scoreDesc);
-                detailDiv.appendChild(introTitle);
-                detailDiv.appendChild(introContent);
-                detailDiv.appendChild(featureTitle);
-                detailDiv.appendChild(featureContent);
-
-                constitutionDetails.appendChild(detailDiv);
-            });
         }
 
         // 页面加载完成后初始化
@@ -597,12 +608,4 @@
         });
     </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
