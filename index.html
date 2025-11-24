@@ -28,7 +28,8 @@
     <style type="text/tailwindcss">
         @layer utilities {
             .bg-paper {
-                background-image: url('https://picsum.photos/id/318/1920/1080');
+                /* background-image: url('https://picsum.photos/id/318/1920/1080'); */
+                background-image: url("./img_source/gufeng_background3.png");
                 background-size: cover;
                 background-attachment: fixed;
                 background-position: center;
@@ -54,6 +55,7 @@
             .content-center {
                 @apply max-w-2xl mx-auto;
             }
+
         }
     </style>
 <base target="_blank">
@@ -72,6 +74,11 @@
                 </p>
             </div>
         </header>
+
+        <!-- 社群 logo -->
+        <img src="./img_source/logo_tou.png" alt="社群"
+            class="fixed top-2 right-2 w-6 h-6 opacity-80 pointer-events-none z-50">
+
 
         <!-- 主内容区 -->
         <main class="flex-grow container mx-auto px-3 py-6 md:py-12">
