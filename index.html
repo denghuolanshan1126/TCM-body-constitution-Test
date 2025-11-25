@@ -334,8 +334,8 @@
 
         // 开始测试
         startTestBtn.addEventListener('click', () => {
-            /* ===== 洗牌开始（保持不变） ===== */
-            const attention = questions.shift();      // 取出注意力题
+            /* ===== 洗牌开始 ===== */
+            const attention = questions.shift();      // 取出注意力题（如开启）
             shuffleArray(questions);                  // 洗后面全部
             questions.unshift(attention);             // 把注意力题放回第一题
             /* ===== 洗牌结束 ===== */
@@ -531,78 +531,74 @@
                 else if (s >= CUTOFF_TEND) { constitutionResults[type].level = '轻度倾向'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
             });
 
-            /* ===== 3. 平和守门逻辑修复 ===== */
+            /* ===== 3. 平和守门 ===== */
             let isPinghe = false;
             if (pingheScore >= 50) {
                 const otherMains = mainConstitutions.filter(t => t !== '平和质');
-                if (otherMains.length === 0) { 
-                    isPinghe = true; 
-                    mainConstitutions = ['平和质']; 
-                }
+                if (otherMains.length === 0) { isPinghe = true; mainConstitutions = ['平和质']; }
             }
-            // 确保mainConstitutions始终有值
-            if (mainConstitutions.length === 0) {
-                mainConstitutions.push('平和质（倾向）');
-            }
+            if (!isPinghe && mainConstitutions.length === 0) mainConstitutions.push('平和质（倾向）');
 
-            /* ===== 4. 生成大字摘要 ===== */
+            /* ===== 4. 生成大字摘要（优化后） ===== */
             const levelMap = {};
             Object.keys(constitutionResults).forEach(type => {
                 const s = constitutionResults[type].convertedScore;
-                if (type === '平和质') levelMap[type] = s >= 70 ? '平和' : s >= 50 ? '基本平和' : '平和倾向';
-                else {
-                if (s >= CUTOFF_SEVERE) levelMap[type] = '重度';
-                else if (s >= CUTOFF_MAIN) levelMap[type] = '中度';
-                else if (s >= CUTOFF_TEND) levelMap[type] = '轻度倾向';
+                if (type === '平和质') {
+                    // 平和质的三级分类细化
+                    levelMap[type] = s >= 70 ? '平和（优秀）' : s >= 50 ? '平和（良好）' : '平和倾向';
+                } else {
+                    if (s >= CUTOFF_SEVERE) levelMap[type] = '重度';
+                    else if (s >= CUTOFF_MAIN) levelMap[type] = '中度';
+                    else if (s >= CUTOFF_TEND) levelMap[type] = '轻度倾向';
                 }
             });
 
+            // 分类所有体质（单独处理平和质）
             const bucket = { 重度: [], 中度: [], 轻度倾向: [], 平和: [] };
             Object.keys(levelMap).forEach(type => {
-                if (levelMap[type] in bucket) {
+                if (type === '平和质') {
+                    // 平和质无论等级如何，都归入"平和"桶
+                    bucket['平和'].push(`${type}（${levelMap[type]}）`);
+                } else if (bucket.hasOwnProperty(levelMap[type])) {
                     bucket[levelMap[type]].push(type);
                 }
             });
 
-            // 处理平和质
-            if (levelMap['平和质']) {
-                bucket['平和'].push('平和质');
-            }
-
+            // 构建结果文本（带颜色样式）
             let bigTitle = '';
-            let line2   = '';
-            let line3   = '';
+            let line2 = '';
+            let line3 = '';
 
             // 有重度体质
             if (bucket['重度'].length > 0) {
-                bigTitle = `请您注意：您有${bucket['重度'].length}种体质呈重度偏颇`;
-                line2 = `重度偏颇：${bucket['重度'].join('、')}，建议重视起来，尽快调理`;
+                bigTitle = `<span class="text-red-700 font-bold">重点提醒：您有${bucket['重度'].length}种体质呈重度偏颇</span>`;
+                line2 = `<span class="text-gray-700">重度偏颇：</span><span class="text-red-600">${bucket['重度'].join('、')}</span><span class="text-gray-700">，建议尽快调理</span>`;
                 
-                // 显示所有中度体质
+                // 显示中度体质（若有）
                 if (bucket['中度'].length > 0) {
-                    line3 = `中度偏颇：${bucket['中度'].join('、')}，请多注意生活作息改善`;
+                    line3 = `<span class="text-gray-700">中度偏颇：</span><span class="text-amber-600">${bucket['中度'].join('、')}</span><span class="text-gray-700">，请注意生活作息</span>`;
                 } else if (bucket['轻度倾向'].length > 0) {
-                    line3 = `轻度倾向：${bucket['轻度倾向'].join('、')}，可作为日常保健参考`;
+                    line3 = `<span class="text-gray-700">轻度倾向：</span><span class="text-green-600">${bucket['轻度倾向'].join('、')}</span><span class="text-gray-700">，可作为日常保健参考</span>`;
                 }
             } 
             // 没有重度但有中度体质
             else if (bucket['中度'].length > 0) {
-                bigTitle = `您有${bucket['中度'].length}种体质呈中度偏颇，需关注`;
-                line2 = `中度倾向：${bucket['中度'].join('、')}，建议及早调整生活方式`;
+                bigTitle = `<span class="text-amber-700 font-bold">您有${bucket['中度'].length}种体质呈中度偏颇，需关注</span>`;
+                line2 = `<span class="text-gray-700">中度倾向：</span><span class="text-amber-600">${bucket['中度'].join('、')}</span><span class="text-gray-700">，建议及早调整生活方式</span>`;
                 
                 if (bucket['轻度倾向'].length > 0) {
-                    line3 = `轻度倾向：${bucket['轻度倾向'].join('、')}，可做日常微调`;
+                    line3 = `<span class="text-gray-700">轻度倾向：</span><span class="text-green-600">${bucket['轻度倾向'].join('、')}</span><span class="text-gray-700">，可做日常微调</span>`;
                 }
             } 
             // 只有轻度倾向
             else if (bucket['轻度倾向'].length > 0) {
-                bigTitle = `恭喜！您大致为平和体质，仍有${bucket['轻度倾向'].length}个小地方可优化`;
-                line2 = `轻度倾向：${bucket['轻度倾向'].join('、')}，通过饮食、运动即可改善`;
+                bigTitle = `<span class="text-green-700 font-bold">恭喜！您的平和质状态：${bucket['平和'][0].replace('平和质（', '').replace('）', '')}</span>`;
+                line2 = `<span class="text-gray-700">轻度倾向：</span><span class="text-green-600">${bucket['轻度倾向'].join('、')}</span><span class="text-gray-700">，通过饮食、运动即可改善</span>`;
             } 
-            // 平和体质
+            // 纯平和体质
             else {
-                bigTitle = `恭喜！您当前为平和体质，请继续保持`;
-                line2 = `建议：均衡饮食、规律作息、适度运动，每年可复测一次`;
+                bigTitle = `<span class="text-green-700 font-bold">恭喜！您的平和质状态：${bucket['平和'][0].replace('平和质（', '').replace('）', '')}</span>`;
+                line2 = `<span class="text-gray-700">建议：均衡饮食、规律作息、适度运动，每年可复测一次</span>`;
             }
 
             // 组合所有行，过滤空值
@@ -614,35 +610,17 @@
                 summaryHtml += '<br><span class="text-amber-700 text-sm">提示：回答区分度较低，结果仅供参考。</span>';
             }
 
-            resultSummary.innerHTML = `<span class="text-lg font-bold text-primary">${summaryHtml}</span>`;
+            resultSummary.innerHTML = summaryHtml;
 
-            /* ===== 5. 生成体质详情卡片（修复显示逻辑） ===== */
+            /* ===== 5. 体质详情卡片生成 ===== */
             constitutionDetails.innerHTML = '';
-            
-            // 处理平和质（倾向）的特殊情况
-            if (mainConstitutions.includes('平和质（倾向）')) {
-                const card = document.createElement('div');
-                card.className = 'border-2 border-primary rounded-lg p-4 bg-light/50 mx-auto max-w-sm';
-                card.innerHTML = `
-                    <h3 class="text-[clamp(1rem,3vw,1.2rem)] font-kai font-bold text-primary mb-2 text-center">平和质（倾向）</h3>
-                    <p class="mb-3 text-xs md:text-sm italic text-center">正常范围</p>
-                    <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">体质介绍：</h4>
-                    <p class="mb-3 leading-relaxed text-sm md:text-base text-center">${constitutionIntro['平和质'].介绍}</p>
-                    <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">主要特征：</h4>
-                    <p class="leading-relaxed text-sm md:text-base text-center">${constitutionIntro['平和质'].特征}</p>
-                `;
-                constitutionDetails.appendChild(card);
-            }
-            
-            // 生成其他体质卡片
             Object.keys(constitutionResults).forEach(type => {
                 const res = constitutionResults[type];
-                // 平和质即使正常也显示，其他体质按原逻辑
-                if (type !== '平和质' && res.level === '正常' && !res.isMain) return;
-                
+                if (res.level === '正常' && !res.isMain) return;
                 const intro = constitutionIntro[type];
                 let levelText = res.level;
                 if (type === '平和质') {
+                    // 平和质等级细化显示
                     levelText = res.convertedScore >= 70 ? '非常平和' : res.convertedScore >= 50 ? '平和' : '基本平和';
                 }
                 const card = document.createElement('div');
