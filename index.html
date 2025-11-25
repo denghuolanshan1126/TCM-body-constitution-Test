@@ -558,15 +558,9 @@
                 mainConstitutions.push('平和质（倾向）');
             }
 
-            // =⑧= 摘要追加低区分提示
-            let summaryHtml = '';
-            if (mainConstitutions.length === 1) {
-                summaryHtml = `您的体质类型为：<span class="text-primary font-bold">${mainConstitutions[0]}</span>`;
-            } else {
-                summaryHtml = `您的体质为兼夹体质，主要类型为：<span class="text-primary font-bold">${mainConstitutions.join('、')}</span>`;
-            }
-            if (isLowDev) summaryHtml += '<br><span class="text-amber-700 text-sm">提示：回答区分度较低，结果仅供参考。</span>';
-            resultSummary.innerHTML = summaryHtml;
+            // =⑩= 结果页大字摘要重写（其余代码保留）
+            const summaryHtml = buildResultSummary();
+            resultSummary.innerHTML = `<span class="text-lg font-bold text-primary">${summaryHtml}</span>`;
 
 
             // =⑨= 卡片文案软化（平和质也分三档）
@@ -593,10 +587,80 @@
                 <p class="leading-relaxed text-sm md:text-base text-center">${intro.特征}</p>
                 `;
                 constitutionDetails.appendChild(card);
-            }
-        );
-
+            });
         }
+
+
+        /* =⑩= 结果页大字摘要重写 =*/
+        function buildResultSummary() {
+            /* 先收集 9 个体质的档次（只分 重度/中度/轻度/平和）*/
+            const levelMap = {};          // {平和质:'平和', 气虚质:'轻度倾向' ...}
+            const levelOrder = ['重度', '中度', '轻度倾向', '平和']; // 用于排序
+            Object.keys(constitutionResults).forEach(type => {
+                const s = constitutionResults[type].convertedScore;
+                if (type === '平和质') {                       // 平和单独处理
+                    levelMap[type] = s >= 70 ? '平和' : s >= 50 ? '基本平和' : '平和倾向';
+                } else {
+                    if (s >= CUTOFF_SEVERE) levelMap[type] = '重度';
+                    else if (s >= CUTOFF_MAIN) levelMap[type] = '中度';
+                    else if (s >= CUTOFF_TEND) levelMap[type] = '轻度倾向';
+                    // <30 不显示，所以不存
+                }
+            });
+
+            /* 分栏汇总：同档次放一起，方便后面拼句子 */
+            const bucket = { 重度: [], 中度: [], 轻度倾向: [], 平和: [] };
+            Object.keys(levelMap).forEach(type => {
+                bucket[levelMap[type]].push(type);
+            });
+
+            /* =⑪= 生成大字标题 + 2 行小字  */
+            let bigTitle = '';
+            let line2 = '';
+            let line3 = '';
+
+            /* 情况1：有重度 → 重点提醒 */
+            if (bucket['重度'].length) {
+                const first = bucket['重度'][0];   // 取第一个重度当代表
+                bigTitle = `重点提醒：您「${first}」倾向显著，建议尽快调理`;
+                line2 = bucket['中度'].length
+                    ? `中度偏颇：${bucket['中度'].join('、')}，请注意生活作息`
+                    : '';
+                line3 = bucket['轻度倾向'].length
+                    ? `轻度倾向：${bucket['轻度倾向'].join('、')}，可作为日常保健参考`
+                    : '';
+            }
+            /* 情况2：无重度，但有中度 → 一般提醒 */
+            else if (bucket['中度'].length) {
+                bigTitle = `暂无显著体质偏颇，但已有中度信号需关注`;
+                line2 = `中度倾向：${bucket['中度'].join('、')}，建议及早调整生活方式`;
+                line3 = bucket['轻度倾向'].length
+                    ? `轻度倾向：${bucket['轻度倾向'].join('、')}，可做日常微调`
+                    : '';
+            }
+            /* 情况3：只有轻度 → 平和恭喜 */
+            else if (bucket['轻度倾向'].length) {
+                bigTitle = `恭喜！您大致为平和体质，仍有小地方可优化`;
+                line2 = `轻度倾向：${bucket['轻度倾向'].join('、')}，通过饮食、运动即可改善`;
+                line3 = ``;
+            }
+            /* 情况4：纯平和 → 直接恭喜 */
+            else {
+                bigTitle = `恭喜！您当前为平和体质，请继续保持`;
+                line2 = `建议：均衡饮食、规律作息、适度运动，每年可复测一次`;
+                line3 = ``;
+            }
+
+            /* =⑫= 拼成 3 行大字，回传 HTML */
+            const lines = [bigTitle, line2, line3].filter(Boolean); // 去掉空行
+            return lines.join('<br><span class="text-sm text-gray-600">') +
+                '</span>'; // 小字灰度，不抢眼
+        }
+
+        /* 把原 showResult() 里「生成结果摘要」段落替换为下面 2 行即可： */
+        const summaryHtml = buildResultSummary();
+        resultSummary.innerHTML = `<span class="text-lg font-bold text-primary">${summaryHtml}</span>`;
+
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', () => {
