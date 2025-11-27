@@ -1,237 +1,668 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>中医九种体质辨识测试</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .bg-paper {
-        background-image: url('https://fastly.picsum.photos/id/998/5000/3338.jpg?hmac=yaE-JjQeaQRYhB_8W8mnYhtR_neSbokA38UUjNgxbDw');
-        background-size: cover;
-        background-attachment: fixed;
-        background-position: center;
-      }
-      .bg-overlay {
-        background-color: rgba(245, 245, 220, 0.95);
-      }
-      .text-shadow {
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-      }
-      .content-center {
-        @apply max-w-2xl mx-auto;
-      }
-    }
-  </style>
-  <base target="_blank">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中医九种体质辨识测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <script>
+        // === 四档界限：倾向→中度→显著（重度） ===
+        const CUTOFF_TEND   = 30;  // ≥30 轻度倾向
+        const CUTOFF_MAIN   = 50;  // ≥50 中度（旧40↑）
+        const CUTOFF_SEVERE = 70;  // ≥70 重度
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B4513',
+                        secondary: '#D2B48C',
+                        accent: '#CD853F',
+                        light: '#F5F5DC',
+                        dark: '#2F2F2F',
+                    },
+                    fontFamily: {
+                        song: ['SimSun', 'STSong', 'serif'],
+                        kai: ['KaiTi', 'STKaiti', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .bg-paper { 
+                background-image: url('https://fastly.picsum.photos/id/998/5000/3338.jpg?hmac=yaE-JjQeaQRYhB_8W8mnYhtR_neSbokA38UUjNgxbDw'); 
+                background-size: cover;
+                background-attachment: fixed;
+                background-position: center;
+            }
+            .bg-overlay {
+                background-color: rgba(245, 245, 220, 0.95);
+            }
+            .border-pattern {
+                background-image: repeating-linear-gradient(45deg, #8B4513, #8B4513 5px, transparent 5px, transparent 25px);
+            }
+            .text-shadow {
+                text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            }
+            .scroll-smooth {
+                scroll-behavior: smooth;
+            }
+            .option-box {
+                @apply flex items-start p-3 bg-light rounded-md hover:bg-secondary/20 transition-all duration-200 cursor-pointer border border-transparent hover:border-primary w-full h-[80px] overflow-hidden mx-auto;
+            }
+            .option-label {
+                @apply cursor-pointer flex-grow text-wrap leading-tight;
+            }
+            .content-center {
+                @apply max-w-2xl mx-auto;
+            }
+
+        }
+    </style>
+<base target="_blank">
 </head>
-
 <body class="bg-paper font-song text-dark scroll-smooth">
-  <div class="min-h-screen flex flex-col">
-    <header class="border-b-4 border-primary bg-overlay py-3 shadow-md">
-      <div class="container mx-auto px-3 text-center">
-        <h1 class="text-[clamp(1.5rem,5vw,2rem)] font-kai font-bold text-primary text-shadow">中医九种体质辨识测试</h1>
-        <p class="text-[clamp(0.8rem,2vw,0.9rem)] text-dark/80 mt-1">基于传统中医理论，精准辨识体质类型</p>
-      </div>
-    </header>
+    <!-- 页面容器 -->
+    <div class="min-h-screen flex flex-col">
+        <!-- 顶部标题栏 -->
+        <header class="border-b-4 border-primary bg-overlay py-3 shadow-md">
+            <div class="container mx-auto px-3 text-center">
+                <h1 class="text-[clamp(1.5rem,5vw,2rem)] font-kai font-bold text-primary text-shadow">
+                    中医九种体质辨识测试
+                </h1>
+                <p class="text-[clamp(0.8rem,2vw,0.9rem)] text-dark/80 mt-1">
+                    基于传统中医理论，精准辨识体质类型
+                </p>
+            </div>
+        </header>
 
-    <!-- 社群 logo -->
-    <img src="/TCM-body-constitution-Test/img_source/logo_tou_light.png" alt="社群" class="fixed top-2 right-2 w-6 h-6 opacity-80 pointer-events-none z-50">
+        <!-- 社群 logo -->
+        <img src="/TCM-body-constitution-Test/img_source/logo_tou_light.png" alt="社群"
+            class="fixed top-2 right-2 w-6 h-6 opacity-80 pointer-events-none z-50">
 
-    <main class="flex-grow container mx-auto px-3 py-6 md:py-12">
-      <!-- 引导页 -->
-      <section id="intro" class="block content-center bg-overlay rounded-lg shadow-xl p-5 md:p-8 border-2 border-secondary">
-        <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-3 mb-4 rounded">
-          <strong>温馨提示：</strong><br>
-          体质倾向≠疾病；30-49为“轻度倾向”，50-69为“中度”，≥70为“显著」。<br>
-          请按近一年<strong>真实感受</strong>作答，勿全部选“有时」。
-        </div>
-        <div class="text-center mb-6">
-          <h2 class="text-[clamp(1.3rem,4vw,1.8rem)] font-kai font-bold text-primary mb-3">测试说明</h2>
-          <div class="w-20 h-1 bg-accent mx-auto mb-4"></div>
-        </div>
-        <div class="space-y-3 text-[clamp(0.85rem,2vw,1rem)] leading-relaxed text-center">
-          <p>您好！请根据过去一年的身体感受如实回答，每题按以下标准评分：</p>
-          <div class="bg-light p-3 rounded-md border-l-4 border-primary text-sm max-w-md mx-auto text-left">
-            <p>1分：根本没有/从不</p>
-            <p>2分：很少/偶尔</p>
-            <p>3分：有时</p>
-            <p>4分：经常</p>
-            <p>5分：总是如此</p>
-          </div>
-          <p class="mt-3">一题一页呈现，完成后点击"下一题」，最后一题点击"提交结果」查看分析。</p>
-        </div>
-        <div class="mt-6 text-center">
-          <button id="start-test" class="bg-primary hover:bg-primary/90 text-white font-kai text-base md:text-lg px-6 py-2 md:py-3 rounded-md shadow-md transition-all duration-300 transform hover:scale-105">
-            开始测试
-          </button>
-        </div>
-      </section>
+        <!-- 主内容区 -->
+        <main class="flex-grow container mx-auto px-3 py-6 md:py-12">
+            <!-- 测试引导页 -->
+            <section id="intro" class="block content-center bg-overlay rounded-lg shadow-xl p-5 md:p-8 border-2 border-secondary">
+            <!-- =①= 顶部温馨提示卡（新增） -->
+                <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-3 mb-4 rounded">
+                    <strong>温馨提示：</strong><br>
+                    体质倾向≠疾病；30-49为“轻度倾向”，50-69为“中度”，≥70为“显著”。<br>
+                    请按近一年<strong>真实感受</strong>作答，勿全部选“有时”。
+                </div>
+                <!-- =①= 结束 -->
 
-      <!-- 问卷答题区 -->
-      <section id="questionnaire" class="hidden content-center bg-overlay rounded-lg shadow-xl p-5 md:p-8 border-2 border-secondary">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-5 gap-2 max-w-md mx-auto">
-          <h2 class="text-[clamp(1.1rem,3vw,1.4rem)] font-kai font-bold text-primary text-center md:text-left">
-            <span id="question-number">第1题</span> / <span id="total-questions">45题</span>
-          </h2>
-          <div class="w-full md:w-32 bg-light h-2 rounded-full overflow-hidden">
-            <div id="progress-bar" class="bg-accent h-full w-0 transition-all duration-500"></div>
-          </div>
-        </div>
-        <div class="border-b border-secondary pb-3 mb-5 max-w-md mx-auto text-center">
-          <p id="question-text" class="text-[clamp(0.95rem,2.5vw,1.1rem)] leading-relaxed font-medium text-wrap"></p>
-        </div>
-        <div id="options" class="grid grid-cols-1 gap-2.5 mb-6 max-w-md mx-auto"></div>
-        <div class="flex justify-between items-center max-w-md mx-auto">
-          <button id="prev-btn" class="bg-light hover:bg-light/80 text-primary border border-primary font-kai px-4 py-2 rounded-md shadow transition-all duration-300 hidden text-sm md:text-base">
-            <i class="fa fa-arrow-left mr-1"></i> 上一题
-          </button>
-          <button id="next-btn" class="bg-primary hover:bg-primary/90 text-white font-kai px-6 py-2.5 rounded-md shadow-md transition-all duration-300 text-sm md:text-base">
-            下一题 <i class="fa fa-arrow-right ml-1"></i>
-          </button>
-          <button id="submit-btn" class="bg-accent hover:bg-accent/90 text-white font-kai px-6 py-2.5 rounded-md shadow-md transition-all duration-300 hidden text-sm md:text-base">
-            提交结果
-          </button>
-        </div>
-      </section>
+                <div class="text-center mb-6">
+                    <h2 class="text-[clamp(1.3rem,4vw,1.8rem)] font-kai font-bold text-primary mb-3">测试说明</h2>
+                    <div class="w-20 h-1 bg-accent mx-auto mb-4"></div>
+                </div>
+                <div class="space-y-3 text-[clamp(0.85rem,2vw,1rem)] leading-relaxed text-center">
+                    <p>您好！请根据过去一年的身体感受如实回答，每题按以下标准评分：</p>
+                    <div class="bg-light p-3 rounded-md border-l-4 border-primary text-sm max-w-md mx-auto text-left">
+                        <p>1分：根本没有/从不</p>
+                        <p>2分：很少/偶尔</p>
+                        <p>3分：有时</p>
+                        <p>4分：经常</p>
+                        <p>5分：总是如此</p>
+                    </div>
+                    <p class="mt-3">一题一页呈现，完成后点击"下一题"，最后一题点击"提交结果"查看分析。</p>
+                </div>
+                <div class="mt-6 text-center">
+                    <button id="start-test" class="bg-primary hover:bg-primary/90 text-white font-kai text-base md:text-lg px-6 py-2 md:py-3 rounded-md shadow-md transition-all duration-300 transform hover:scale-105">
+                        开始测试
+                    </button>
+                </div>
+            </section>
 
-      <!-- 结果展示区 -->
-      <section id="result" class="hidden content-center bg-overlay rounded-lg shadow-xl p-5 md:p-8 border-2 border-secondary">
-        <div class="text-center mb-6">
-          <h2 class="text-[clamp(1.3rem,4vw,1.8rem)] font-kai font-bold text-primary mb-3">您的体质辨识结果</h2>
-          <div class="w-20 h-1 bg-accent mx-auto mb-4"></div>
-          <div id="result-summary" class="text-[clamp(0.95rem,2.5vw,1.1rem)] font-medium text-dark/90 text-wrap max-w-md mx-auto"></div>
-        </div>
-        <div id="constitution-details" class="space-y-5 mt-8 max-w-md mx-auto"></div>
-        <div class="mt-8 text-center">
-          <button id="restart-test" class="bg-primary hover:bg-primary/90 text-white font-kai text-base md:text-lg px-6 py-2.5 rounded-md shadow-md transition-all duration-300 transform hover:scale-105">
-            重新测试
-          </button>
-        </div>
-        <!-- =⑬ 保存提示（极简）= -->
-        <p class="text-xs text-gray-500 mt-4 text-center">
-          想保存本页？点击浏览器右上角「⋯」→「保存为图片」即可收藏分享。
-        </p>
-      </section>
-    </main>
+            <!-- 问卷答题区 -->
+            <section id="questionnaire" class="hidden content-center bg-overlay rounded-lg shadow-xl p-5 md:p-8 border-2 border-secondary">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-5 gap-2 max-w-md mx-auto">
+                    <h2 class="text-[clamp(1.1rem,3vw,1.4rem)] font-kai font-bold text-primary text-center md:text-left">
+                        <span id="question-number">第1题</span> / <span id="total-questions">45题</span>
+                    </h2>
+                    <div class="w-full md:w-32 bg-light h-2 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-accent h-full w-0 transition-all duration-500"></div>
+                    </div>
+                </div>
+                <div class="border-b border-secondary pb-3 mb-5 max-w-md mx-auto text-center">
+                    <p id="question-text" class="text-[clamp(0.95rem,2.5vw,1.1rem)] leading-relaxed font-medium text-wrap"></p>
+                </div>
+                <div id="options" class="grid grid-cols-1 gap-2.5 mb-6 max-w-md mx-auto">
+                    <!-- 选项将通过JS动态生成 -->
+                </div>
+                <div class="flex justify-between items-center max-w-md mx-auto">
+                    <button id="prev-btn" class="bg-light hover:bg-light/80 text-primary border border-primary font-kai px-4 py-2 rounded-md shadow transition-all duration-300 hidden text-sm md:text-base">
+                        <i class="fa fa-arrow-left mr-1"></i> 上一题
+                    </button>
+                    <button id="next-btn" class="bg-primary hover:bg-primary/90 text-white font-kai px-6 py-2.5 rounded-md shadow-md transition-all duration-300 text-sm md:text-base">
+                        下一题 <i class="fa fa-arrow-right ml-1"></i>
+                    </button>
+                    <button id="submit-btn" class="bg-accent hover:bg-accent/90 text-white font-kai px-6 py-2.5 rounded-md shadow-md transition-all duration-300 hidden text-sm md:text-base">
+                        提交结果
+                    </button>
+                </div>
+            </section>
 
-    <footer class="bg-dark text-light py-4 mt-8">
-      <div class="container mx-auto px-3 text-center">
-        <p class="font-kai text-[clamp(0.75rem,1.5vw,0.85rem)]">中医体质辨识测试 | 基于传统中医理论研发</p>
-        <p class="text-light/70 text-xs mt-1">免责声明：本测试结果仅为初步参考，不构成医疗诊断建议</p>
-      </div>
-    </footer>
-  </div>
+            <!-- 结果展示区 -->
+            <section id="result" class="hidden content-center bg-overlay rounded-lg shadow-xl p-5 md:p-8 border-2 border-secondary">
+                <div class="text-center mb-6">
+                    <h2 class="text-[clamp(1.3rem,4vw,1.8rem)] font-kai font-bold text-primary mb-3">您的体质辨识结果</h2>
+                    <div class="w-20 h-1 bg-accent mx-auto mb-4"></div>
+                    <div id="result-summary" class="text-[clamp(0.95rem,2.5vw,1.1rem)] font-medium text-dark/90 text-wrap max-w-md mx-auto"></div>
+                </div>
 
-  <script>
-    /* =常量+洗牌+四档分级 你已有，省略复制= */
+                <div id="constitution-details" class="space-y-5 mt-8 max-w-md mx-auto">
+                    <!-- 体质详情将通过JS动态生成 -->
+                </div>
 
-    /* =⑩ 结果摘要生成（已集成在 showResult 内）= */
-    function showResult() {
-      questionnaireSection.classList.add('hidden');
-      resultSection.classList.remove('hidden');
+                <div class="mt-8 text-center">
+                    <button id="restart-test" class="bg-primary hover:bg-primary/90 text-white font-kai text-base md:text-lg px-6 py-2.5 rounded-md shadow-md transition-all duration-300 transform hover:scale-105">
+                        重新测试
+                    </button>
+                </div>
+              <!-- =⑬ 保存提示（极简）= -->
+              <p class="text-xs text-gray-500 mt-4 text-center">
+                想保存本页？点击浏览器右上角「⋯」→「保存为图片」即可收藏分享。
+              </p>
+              
+            </section>
+        </main>
 
-      /* 1. 计算转化分+标准差（略，你已有）*/
-      const constitutionResults = {};
-      let mainConstitutions = [];
-      let pingheScore = 0;
-      const scoresArr = [];
-      Object.keys(constitutionScores).forEach(type => {
-        const rawScore = constitutionScores[type];
-        const questionCount = constitutionQuestionCount[type] || 0;
-        const convertedScore = Math.round(((rawScore - questionCount) / (questionCount * 4)) * 100);
-        constitutionResults[type] = { rawScore, convertedScore, isMain: false, level: '正常' };
-        if (type === '平和质') pingheScore = convertedScore;
-        scoresArr.push(convertedScore);
-      });
-      const avg = scoresArr.reduce((a, b) => a + b, 0) / scoresArr.length;
-      const stdDev = Math.sqrt(scoresArr.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b, 0) / scoresArr.length);
-      const isLowDev = stdDev < 8;
+        <!-- 页脚 -->
+        <footer class="bg-dark text-light py-4 mt-8">
+            <div class="container mx-auto px-3 text-center">
+                <p class="font-kai text-[clamp(0.75rem,1.5vw,0.85rem)]">
+                    中医体质辨识测试 | 基于传统中医理论研发
+                </p>
+                <p class="text-light/70 text-xs mt-1">
+                    免责声明：本测试结果仅为初步参考，不构成医疗诊断建议，请结合专业中医师诊断确认
+                </p>
+            </div>
+        </footer>
+    </div>
 
-      /* 2. 档次判定（略，你已有）*/
-      Object.keys(constitutionResults).forEach(type => {
-        const s = constitutionResults[type].convertedScore;
-        if (s >= 70) { constitutionResults[type].level = '重度'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
-        else if (s >= 50) { constitutionResults[type].level = '中度'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
-        else if (s >= 30) { constitutionResults[type].level = '轻度倾向'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
-      });
+    <script>
+        // 问卷题目数据（完整包含所有题目，按顺序排列）
+        const questions = [
+            // 第一部分：身体感受与生理特征
+            { id: 'B1', text: '您容易疲乏无力吗？（例如，稍微活动一下就感到累）', type: '气虚质' },
+            { id: 'B2', text: '您容易气短（呼吸短促，接不上气）吗？', type: '气虚质' },
+            { id: 'B3', text: '您说话的声音低弱无力吗？', type: '气虚质' },
+            { id: 'B4', text: '您感到头晕或站起时容易眩晕吗？', type: '气虚质' },
+            { id: 'B5', text: '是否容易为未发生的事担心，反复思考，思虑过多，甚至影响到睡眠？', type: '气虚质' },
+            { id: 'X3', text: '您的记忆力如何？（反向计分：5分表示记忆力很好）', type: '气虚质' },
 
-      /* 3. 平和守门（略，你已有）*/
-      let isPinghe = false;
-      if (pingheScore >= 50) {
-        const otherMains = mainConstitutions.filter(t => t !== '平和质');
-        if (otherMains.length === 0) { isPinghe = true; mainConstitutions = ['平和质']; }
-      }
-      if (!isPinghe && mainConstitutions.length === 0) mainConstitutions.push('平和质（倾向）');
+            { id: 'C1', text: '您手脚发凉吗？（尤其是冬天，甚至夏天也凉）', type: '阳虚质' },
+            { id: 'C2', text: '您胃部、背部或腰膝部怕冷吗？', type: '阳虚质' },
+            { id: 'C3', text: '您比一般人耐受不了寒冷（如冬天的寒冷，夏天的冷空调、电扇）吗？', type: '阳虚质' },
+            { id: 'C4', text: '喝冷水或吃凉性食物（如西瓜、梨）后，是否容易感到胃部不适或腹泻？', type: '阳虚质' },
+            { id: 'C5', text: '是否倾向于安静独处，对外界活动兴趣不大，给人“沉静”的感觉？', type: '阳虚质' },
+            { id: 'C6', text: '男性是否有性欲淡漠、勃起障碍？女性是否有月经推迟、痛经、小腹发凉？', type: '阳虚质' },
+            { id: 'C7', text: '是否常常觉得情绪不高，对很多事情都提不起兴趣，缺乏活力？', type: '阳虚质' },
+            { id: 'X1', text: '您的性格偏于内向吗？', type: '阳虚质' },
 
-      /* 4. 生成大字摘要（原地写，不依赖外部函数）*/
-      const levelMap = {};
-      Object.keys(constitutionResults).forEach(type => {
-        const s = constitutionResults[type].convertedScore;
-        if (type === '平和质') levelMap[type] = s >= 70 ? '平和' : s >= 50 ? '基本平和' : '平和倾向';
-        else {
-          if (s >= 70) levelMap[type] = '重度';
-          else if (s >= 50) levelMap[type] = '中度';
-          else if (s >= 30) levelMap[type] = '轻度倾向';
+            { id: 'D1', text: '您感到手脚心发热吗？', type: '阴虚质' },
+            { id: 'D2', text: '您感觉身体、脸上有发热感吗？', type: '阴虚质' },
+            { id: 'D3', text: '您皮肤或口唇干燥吗？', type: '阴虚质' },
+            { id: 'D4', text: '您口唇的颜色比一般人红吗？', type: '阴虚质' },
+            { id: 'D5', text: '您容易便秘或大便干燥吗？', type: '阴虚质' },
+            { id: 'X2', text: '您容易失眠或多梦吗？', type: '阴虚质' },
+
+            { id: 'E1', text: '您感到胸闷或腹部胀满吗？', type: '痰湿质' },
+            { id: 'E2', text: '您感到身体沉重不轻松或不爽快，头脑像被布裹住一样不清醒吗？', type: '痰湿质' },
+            { id: 'E3', text: '您腹部肥满松软吗？', type: '痰湿质' },
+            { id: 'E4', text: '您有额部油脂分泌多的现象吗？', type: '痰湿质' },
+            { id: 'E6', text: '您的性格比较温和、做事不紧不慢，或许容易被人称为“老好人”角色吗？', type: '痰湿质' },
+            { id: 'E7', text: '您上眼睑比别人肿（有轻微隆起的现象）吗？', type: '痰湿质' },
+
+            { id: 'F1', text: '您面部或鼻部有油腻感或者油光发亮吗？', type: '湿热质' },
+            { id: 'F2', text: '您容易生痤疮或疮疖吗？', type: '湿热质' },
+            { id: 'F3', text: '您感到口苦或嘴里有异味吗？', type: '湿热质' },
+            { id: 'F4', text: '您大便黏滞不爽、有解不尽的感觉吗？', type: '湿热质' },
+            { id: 'F5', text: '您小便时尿道有发热感、尿色浓（深）吗？', type: '湿热质' },
+            { id: 'F6', text: '您容易心情烦躁，尤其是天气湿热时加重吗？', type: '湿热质' },
+            { id: 'F7', text: '您是否常感觉身体困重，精神不振，即使睡眠充足也提不起劲？', type: '湿热质' },
+
+            { id: 'G1', text: '您的皮肤在不知不觉中会出现青紫瘀斑（皮下出血）吗？', type: '血瘀质' },
+            { id: 'G2', text: '您两颧部有细微红丝吗？', type: '血瘀质' },
+            { id: 'G3', text: '您身体上有哪里疼痛吗？（尤其是固定位置的刺痛）', type: '血瘀质' },
+            { id: 'G4', text: '您面色晦暗或容易出现褐斑吗？', type: '血瘀质' },
+            { id: 'G5', text: '您容易有黑眼圈吗？', type: '血瘀质' },
+
+            { id: 'H1', text: '您感到闷闷不乐、情绪低沉吗？', type: '气郁质' },
+            { id: 'H2', text: '您容易精神紧张、焦虑不安吗？', type: '气郁质' },
+            { id: 'H3', text: '您多愁善感、感情脆弱吗？', type: '气郁质' },
+            { id: 'H4', text: '您容易感到害怕或受到惊吓吗？', type: '气郁质' },
+            { id: 'H5', text: '您胁肋部或乳房胀痛吗？', type: '气郁质' },
+            { id: 'H6', text: '您是否感觉咽喉部有异物感（像有东西堵着），咳不出也咽不下？', type: '气郁质' },
+
+            { id: 'I1', text: '您没有感冒时也会打喷嚏吗？', type: '特禀质' },
+            { id: 'I2', text: '您没有感冒时也会鼻塞、流鼻涕吗？', type: '特禀质' },
+            { id: 'I3', text: '您有因季节变化、温度变化或异味等原因而咳嗽的现象吗？', type: '特禀质' },
+            { id: 'I4', text: '您容易过敏（对药物、食物、气味、花粉或在季节交替、气候变化时）吗？', type: '特禀质' },
+            { id: 'I5', text: '您的皮肤容易起荨麻疹（风团、风疹块、风疙瘩）吗？', type: '特禀质' },
+
+            { id: 'A1', text: '您精力充沛吗？（反向计分题）', type: '平和质' },
+            { id: 'A2', text: '您容易适应季节变化吗？（反向计分）', type: '平和质' }          
+        ];
+
+        // 体质介绍与专业调理方案（医师版）​
+        const constitutionIntro = {
+            "平和质": {
+                "介绍": "中医“阴平阳秘”的理想体质，气血阴阳调和，脏腑功能健运。多由先天禀赋充盈、后天饮食有节、起居有度、情志调畅而成，属健康体质。",
+                "特征": "体态匀称，面色红润有光泽，精力充沛，睡眠安和，食欲正常，二便调畅，舌淡红苔薄白，脉和缓有力。性格开朗，对寒热燥湿适应力强。",
+                "调理建议": "饮食：遵循“五谷为养，五果为助，五畜为益”，三餐定时定量，忌过饥过饱、寒热偏嗜。可常食五谷杂粮，辅以应季蔬果，少进肥甘厚味。\n 起居：避免熬夜耗伤气血；久坐1小时起身活动，疏肝健脾，防气机郁滞。\n运动：选择太极拳、八段锦、慢跑等温和运动，每周3-5次，每次30分钟，以“形劳而不倦”为度，忌剧烈运动耗气伤津。\n情志：保持心境平和，忌大喜大悲，可通过冥想、听宫商调乐曲调和五脏气机。"
+            },
+            "气虚质": {
+                "介绍": "元气亏虚，脏腑机能减退。多由先天不足、后天失养（饮食不节伤脾、劳累过度耗气、久病缠绵耗伤正气）所致，核心为脾肺气虚，卫外不固。",
+                "特征": "神疲乏力，少气懒言，活动后加重，自汗怕风，头晕目眩，健忘，大便溏薄，舌淡胖边有齿痕，脉细弱。易患感冒、内脏下垂。",
+                "调理建议": "饮食：以益气健脾为法，宜食黄芪、党参、白扁豆、山药、大枣等补气食材；忌生冷寒凉、油腻碍胃之品，避免空腹饮茶。\n起居：避免熬夜（23点前入睡），防元气耗损；夏天少吹空调，注意背部保暖，防风寒侵袭；忌过度劳累。\n运动：练八段锦（尤其“两手攀足固肾腰”）或散步、瑜伽等低强度运动，每周3-4次，每次20分钟；运动后及时擦干汗液，忌吹风受凉。\n穴位：每日按揉足三里（膝下3寸）、气海（脐下1.5寸），每穴3-5分钟，力度以酸胀为度，补气健脾。"
+            },
+            "阳虚质": {
+                "介绍": "阳气不足，温煦、推动、固摄功能减退。多由先天虚寒、过食生冷伤阳、久病耗阳、年老体衰所致，核心为肾阳虚衰，脾阳不足。",
+                "特征": "畏寒怕冷，四肢不温，手脚冰凉，喜热饮热食，面色苍白或黧黑，精神不振，大便溏薄或完谷不化，夜尿多，舌淡胖苔白滑，脉沉迟。易患腹泻、水肿、宫寒不孕。",
+                "调理建议": "饮食：温阳散寒、健脾补肾为要，宜食羊肉、牛肉、干姜、花椒、韭菜、核桃等温性食物；严格忌生冷寒凉（冰饮、生鱼片、苦瓜）。\n起居：注意腰腹、下肢保暖；睡前可热水泡脚（加艾叶5g）15分钟，温通经络；保证充足睡眠，忌熬夜耗阳。\n运动：上午9-11点（阳气盛时）慢跑、跳绳，每周3-5次，每次20分钟，激发阳气；练八段锦，振奋阳气。\n穴位：艾灸关元（脐下3寸）、肾俞（第2腰椎旁开1.5寸），每周1-2次，每次15分钟，温补肾阳。"
+            },
+            "阴虚质": {
+                "介绍": "阴液（津液、血液、阴精）亏虚，滋润、濡养、宁静功能减退，“阴虚则内热”。多由劳累过度、熬夜耗阴、过食辛辣燥热、久病耗伤阴液所致。",
+                "特征": "手足心热，口干咽燥，皮肤干燥，口唇干裂，潮热盗汗，头晕耳鸣，失眠多梦，大便干结，舌红少津少苔，脉细数。易患失眠、咽喉炎、便秘。",
+                "调理建议": "饮食：滋阴润燥为法，宜食银耳、百合、麦冬、沙参、枸杞、鸭肉等滋阴食材；忌辛辣燥热（辣椒、烧烤、羊肉）、温热补品（人参、鹿茸）。\n起居：23点前入睡（养阴最佳时段），保证午休30分钟；忌高温干燥环境；避免长时间用眼耗伤肝阴。\n运动：可练瑜伽、八段锦等，每周3次，每次20分钟，忌正午高温运动；运动后饮温水，忌冰水。\n穴位：按揉三阴交（内踝上3寸）、太溪（内踝与跟腱之间），每穴3分钟，滋阴补肾。"
+            },
+            "痰湿质": {
+                "介绍": "脾失健运，水液代谢失常，痰湿内蕴。多由过食肥甘厚味、嗜酒、缺乏运动、情志失调（思虑伤脾）所致，核心为脾虚痰湿内生。",
+                "特征": "身体沉重，腹部肥满松软，面部油脂分泌多，胸闷腹胀，大便黏滞不爽，舌苔白腻，脉滑。易患肥胖症、高血脂、糖尿病、高血压。",
+                "调理建议": "饮食：健脾祛湿为要，宜食薏米、赤小豆、冬瓜、白萝卜、陈皮、生姜等温中理气食材；忌肥甘厚味、甜食（奶茶、蛋糕）、酒精，戒烟。\n起居：保持室内通风干燥；睡前1小时不进食，防加重脾胃负担；忌久坐不动（久坐伤脾），每小时起身活动5分钟。\n运动：可选择快走、跳绳等有氧运动，每周4-5次，每次30-40分钟，以微微出汗为度，促进痰湿排泄；练八段锦“双手托天理三焦”，调理气机。\n穴位：按揉丰隆（外踝上8寸）、阴陵泉（胫骨内侧髁下缘），每穴3-5分钟，健脾祛湿。"
+            },
+            "湿热质": {
+                "介绍": "湿热内蕴，脏腑失调。多由外感湿热之邪、过食辛辣油腻、情志郁结化热所致，常见于南方地区或夏季，核心为湿热交蒸。",
+                "特征": "面部油腻，口苦口臭，痤疮频发，大便黏滞不爽，小便短黄有灼热感，舌红苔黄腻，脉滑数。易患痤疮、湿疹、胆囊炎、尿道炎。",
+                "调理建议": "饮食：清热利湿为法，宜食绿豆、赤小豆、苦瓜、冬瓜、马齿苋、莲藕等食材；忌辛辣油腻、酒精、温热食物（羊肉、桂圆）。\n起居：保持皮肤清洁，出汗后及时冲澡（忌冷水澡）；室内通风，避免闷热潮湿；勤换棉质衣物，保持干爽。\n运动：傍晚慢跑、骑行，每周4次，每次30分钟，忌闷热环境运动；运动后饮淡盐水，补充电解质。\n穴位：按揉曲池（肘横纹外侧端）、足三里，每穴3分钟，清热利湿。"
+            },
+            "血瘀质": {
+                "介绍": "气机郁滞或气虚无力推动，血液运行不畅，瘀血内阻。多由情志失调（肝气郁结）、外伤、久病、年老体弱所致，核心为血瘀脉络。",
+                "特征": "皮肤易生瘀斑，面色晦暗，眼眶发黑，身体固定部位刺痛，舌紫暗或有瘀斑瘀点，脉涩。易患心脑血管疾病、肿瘤、黄褐斑。",
+                "调理建议": "饮食：活血化瘀为要，宜食山楂、玫瑰花、当归、丹参、黑木耳等食材；食疗方：山楂10g+玫瑰花5g煮水代茶饮；忌生冷寒凉（寒凝血瘀）、油腻食物。\n起居：避免久坐久卧，促进气血循环；注意保暖，防寒邪凝滞血脉；保证充足睡眠，忌熬夜耗伤气血。\n运动：练太极拳、舞蹈、跳绳，每周3-5次，每次30分钟，以身体发热为度，疏通经络；避免剧烈运动导致外伤。\n穴位：按揉血海（髌骨内上缘上2寸）、太冲（足背第一、二跖骨间），每穴3分钟，活血化瘀、疏肝理气。"
+            },
+            "气郁质": {
+                "介绍": "肝气郁结，气机郁滞。多由精神压力大、长期抑郁、情志不舒所致，核心为肝失疏泄，气机不畅。",
+                "特征": "情绪低沉，胸闷胁痛，嗳气频繁，失眠多梦，食欲不振，脉弦。易患抑郁症、乳腺增生、甲状腺疾病、更年期综合征。",
+                "调理建议": "饮食：疏肝理气为法，宜食玫瑰花、茉莉花、陈皮、佛手、橙子、芹菜等食物；食疗方：陈皮5g+佛手5g煮水代茶饮，每日1次；忌油腻、生冷、不易消化食物，忌饮酒伤肝。\n起居：避免长期独处，多外出活动；保证睡眠，睡前忌浓茶、咖啡；避免长期处于压抑环境，多接触自然。\n运动：选择瑜伽、舞蹈、登山、游泳，每周3-4次，每次30分钟，疏肝解郁；练八段锦“两手攀足固肾腰”结合深呼吸，调节气机。\n穴位：按揉太冲、期门（乳头直下第六肋间），每穴3分钟，疏肝理气。"
+            },
+            "特禀质": {
+                "介绍": "先天禀赋异常，体质敏感，易发生过敏反应。多由遗传因素所致，部分与后天失养、环境刺激相关，核心为肺脾肾功能失调，卫气不固。",
+                "特征": "易患过敏性鼻炎、荨麻疹、哮喘，对食物（海鲜、牛奶）、花粉、尘螨等过敏，季节变化时适应性差；舌淡红苔薄白，脉弦细。",
+                "调理建议": "饮食：健脾益气、固表脱敏为要，宜食山药、薏米、大枣、黄芪；食疗方：黄芪10g+大枣5颗+大米煮粥；严格忌食明确过敏原，忌辛辣、腥膻发物（虾蟹、羊肉）。\n起居：室内定期清洁，被褥每周暴晒6小时，花粉季减少外出，佩戴N95口罩；避免接触宠物、尘螨、霉菌等过敏原；注意保暖，防感冒诱发过敏。\n运动：室内慢走、八段锦，每周3-4次，每次20分钟，增强体质；避免剧烈运动，防出汗后受凉诱发过敏。\n穴位：按揉足三里、肺俞（第3胸椎旁开1.5寸），每穴3分钟，益气固表；可在中医师指导下服用玉屏风散（黄芪、白术、防风）。"
+            }
+        };
+            
+
+        // 全局变量
+        let currentQuestionIndex = 0;
+        const answers = {};
+        const constitutionScores = {
+            '平和质': 0,
+            '气虚质': 0,
+            '阳虚质': 0,
+            '阴虚质': 0,
+            '痰湿质': 0,
+            '湿热质': 0,
+            '血瘀质': 0,
+            '气郁质': 0,
+            '特禀质': 0
+        };
+        const constitutionQuestionCount = {
+            '平和质': 2,
+            '气虚质': 6,
+            '阳虚质': 8,
+            '阴虚质': 6,
+            '痰湿质': 7,
+            '湿热质': 7,
+            '血瘀质': 5,
+            '气郁质': 6,
+            '特禀质': 5
+        };
+
+        // DOM元素
+        const introSection = document.getElementById('intro');
+        const questionnaireSection = document.getElementById('questionnaire');
+        const resultSection = document.getElementById('result');
+        const startTestBtn = document.getElementById('start-test');
+        const restartTestBtn = document.getElementById('restart-test');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const questionNumber = document.getElementById('question-number');
+        const totalQuestions = document.getElementById('total-questions');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options');
+        const progressBar = document.getElementById('progress-bar');
+        const resultSummary = document.getElementById('result-summary');
+        const constitutionDetails = document.getElementById('constitution-details');
+
+        // 初始化
+        totalQuestions.textContent = `${questions.length}题`;
+
+        // 开始测试
+        startTestBtn.addEventListener('click', () => {
+            /* ===== 洗牌开始 ===== */
+            const attention = questions.shift();      // 取出注意力题（如开启）
+            shuffleArray(questions);                  // 洗后面全部
+            questions.unshift(attention);             // 把注意力题放回第一题
+            /* ===== 洗牌结束 ===== */
+
+            introSection.classList.add('hidden');
+            questionnaireSection.classList.remove('hidden');
+            loadQuestion(currentQuestionIndex);
+            updateProgress();
+        });
+
+        // 重新测试
+        restartTestBtn.addEventListener('click', () => {
+            currentQuestionIndex = 0;
+            Object.keys(answers).forEach(key => delete answers[key]);
+            Object.keys(constitutionScores).forEach(key => constitutionScores[key] = 0);
+            resultSection.classList.add('hidden');
+            questionnaireSection.classList.remove('hidden');
+            loadQuestion(currentQuestionIndex);
+            updateProgress();
+        });
+
+        // 上一题
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+                updateProgress();
+            }
+        });
+
+        // 下一题
+        nextBtn.addEventListener('click', () => {
+            const selectedOption = document.querySelector('input[name="option"]:checked');
+            if (!selectedOption) {
+                alert('请选择一个答案后再继续');
+                return;
+            }
+
+            // 保存答案
+            const questionId = questions[currentQuestionIndex].id;
+            answers[questionId] = parseInt(selectedOption.value);
+
+            // 下一题
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion(currentQuestionIndex);
+                updateProgress();
+            } else {
+                // 最后一题，显示提交按钮
+                calculateScores();
+                showResult();
+            }
+        });
+
+        // 提交结果
+        submitBtn.addEventListener('click', () => {
+            const selectedOption = document.querySelector('input[name="option"]:checked');
+            if (!selectedOption) {
+                alert('请选择一个答案后再提交');
+                return;
+            }
+
+            // 保存最后一题答案
+            const questionId = questions[currentQuestionIndex].id;
+            answers[questionId] = parseInt(selectedOption.value);
+
+            // 计算得分并显示结果
+            calculateScores();
+            showResult();
+        });
+
+        // =工具= Fisher-Yates 洗牌（不含注意力题）
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
         }
-      });
-      const bucket = { 重度: [], 中度: [], 轻度倾向: [], 平和: [] };
-      Object.keys(levelMap).forEach(type => bucket[levelMap[type]].push(type));
 
-      let bigTitle = '';
-      let line2   = '';
-      let line3   = '';
-      if (bucket['重度'].length) {
-        bigTitle = `重点提醒：您「${bucket['重度'][0]}」倾向显著，建议尽快调理`;
-        line2   = bucket['中度'].length ? `中度偏颇：${bucket['中度'].join('、')}，请注意生活作息` : '';
-        line3   = bucket['轻度倾向'].length ? `轻度倾向：${bucket['轻度倾向'].join('、')}，可作为日常保健参考` : '';
-      } else if (bucket['中度'].length) {
-        bigTitle = `暂无显著体质偏颇，但已有中度信号需关注`;
-        line2   = `中度倾向：${bucket['中度'].join('、')}，建议及早调整生活方式`;
-        line3   = bucket['轻度倾向'].length ? `轻度倾向：${bucket['轻度倾向'].join('、')}，可做日常微调` : '';
-      } else if (bucket['轻度倾向'].length) {
-        bigTitle = `恭喜！您大致为平和体质，仍有小地方可优化`;
-        line2   = `轻度倾向：${bucket['轻度倾向'].join('、')}，通过饮食、运动即可改善`;
-      } else {
-        bigTitle = `恭喜！您当前为平和体质，请继续保持`;
-        line2   = `建议：均衡饮食、规律作息、适度运动，每年可复测一次`;
-      }
-      const lines = [bigTitle, line2, line3].filter(Boolean);
-      let summaryHtml = lines.join('<br><span class="text-sm text-gray-600">') + '</span>';
-      if (isLowDev) summaryHtml += '<br><span class="text-amber-700 text-sm">提示：回答区分度较低，结果仅供参考。</span>';
-      resultSummary.innerHTML = `<span class="text-lg font-bold text-primary">${summaryHtml}</span>`;
 
-      /* 5. 卡片详情（你原有，保持不变）*/
-      constitutionDetails.innerHTML = '';
-      Object.keys(constitutionResults).forEach(type => {
-        const res = constitutionResults[type];
-        if (res.level === '正常' && !res.isMain) return;
-        const intro = constitutionIntro[type];
-        let levelText = res.level;
-        if (type === '平和质') {
-          levelText = res.convertedScore >= 70 ? '非常平和' : res.convertedScore >= 50 ? '平和' : '基本平和';
+        // 加载题目（保持选项框固定尺寸）
+        function loadQuestion(index) {
+            const question = questions[index];
+            questionNumber.textContent = `第${index + 1}题`;
+            questionText.textContent = question.text;
+
+            // 生成选项
+            optionsContainer.innerHTML = '';
+            const scores = [1, 2, 3, 4, 5];
+            const labels = ['根本没有/从不', '很少/偶尔', '有时', '经常', '总是如此'];
+
+            scores.forEach((score, i) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option-box'; // 固定高度和宽度的选项框
+                
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'option';
+                input.value = score;
+                input.id = `option-${score}`;
+                input.className = 'mr-3 mt-1 h-4 w-4 text-primary'; // 调整单选框位置
+                
+                // 如果之前有答案，选中对应的选项
+                if (answers[question.id] === score) {
+                    input.checked = true;
+                }
+                
+                const label = document.createElement('label');
+                label.htmlFor = `option-${score}`;
+                label.className = 'option-label'; // 文字自动换行
+                label.textContent = `${score}分：${labels[i]}`;
+                
+                optionDiv.appendChild(input);
+                optionDiv.appendChild(label);
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            // 更新按钮状态
+            if (index === 0) {
+                prevBtn.classList.add('hidden');
+            } else {
+                prevBtn.classList.remove('hidden');
+            }
+
+            if (index === questions.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
         }
-        const card = document.createElement('div');
-        card.className = `${res.isMain ? 'border-2 border-primary' : 'border border-secondary/30'} rounded-lg p-4 bg-light/50 mx-auto max-w-sm`;
-        card.innerHTML = `
-          <h3 class="text-[clamp(1rem,3vw,1.2rem)] font-kai font-bold ${res.isMain ? 'text-primary' : 'text-dark/80'} mb-2 text-center">${type}（转化分：${res.convertedScore}分）</h3>
-          <p class="mb-3 text-xs md:text-sm italic text-center">${levelText}</p>
-          <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">体质介绍：</h4>
-          <p class="mb-3 leading-relaxed text-sm md:text-base text-center">${intro.介绍}</p>
-          <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">主要特征：</h4>
-          <p class="leading-relaxed text-sm md:text-base text-center">${intro.特征}</p>
-        `;
-        constitutionDetails.appendChild(card);
-      });
-    }
 
-    /* =洗牌+常量+计算函数 你已有，省略复制= */
+        // 更新进度条
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.bg-overlay').forEach(el => el.classList.add('transition-all', 'duration-700'));
-    });
-  </script>
+        // 计算体质得分
+        function calculateScores() {
+            // 重置得分
+            Object.keys(constitutionScores).forEach(key => constitutionScores[key] = 0);
+
+            // 计算各体质原始分
+            questions.forEach(question => {
+                const score = answers[question.id];
+                if (score === undefined) return;
+
+                // 反向计分处理
+                let finalScore = score;
+                if (question.id === 'A1' || question.id === 'A2') {
+                    // 平和质反向计分：1→5，2→4，3→3，4→2，5→1
+                    finalScore = 6 - score;
+                } else if (question.id === 'X3') {
+                    // 记忆力反向计分
+                    finalScore = 6 - score;
+                }
+
+                constitutionScores[question.type] += finalScore;
+            });
+        }
+
+        function showResult() {
+            questionnaireSection.classList.add('hidden');
+            resultSection.classList.remove('hidden');
+
+            /* ===== 1. 计算转化分 + 标准差 ===== */
+            const constitutionResults = {};
+            let mainConstitutions = [];
+            let pingheScore = 0;
+            const scoresArr = [];
+
+            Object.keys(constitutionScores).forEach(type => {
+                const rawScore = constitutionScores[type];
+                const questionCount = constitutionQuestionCount[type] || 0;
+                const convertedScore = Math.round(((rawScore - questionCount) / (questionCount * 4)) * 100);
+                constitutionResults[type] = { rawScore, convertedScore, isMain: false, level: '正常' };
+                if (type === '平和质') pingheScore = convertedScore;
+                scoresArr.push(convertedScore);
+            });
+
+            const avg = scoresArr.reduce((a, b) => a + b, 0) / scoresArr.length;
+            const stdDev = Math.sqrt(scoresArr.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b, 0) / scoresArr.length);
+            const isLowDev = stdDev < 8;
+
+            /* ===== 2. 判定档次 ===== */
+            Object.keys(constitutionResults).forEach(type => {
+                const s = constitutionResults[type].convertedScore;
+                if (s >= CUTOFF_SEVERE) { constitutionResults[type].level = '重度'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
+                else if (s >= CUTOFF_MAIN) { constitutionResults[type].level = '中度'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
+                else if (s >= CUTOFF_TEND) { constitutionResults[type].level = '轻度倾向'; constitutionResults[type].isMain = true; mainConstitutions.push(type); }
+            });
+
+            /* ===== 3. 平和守门 ===== */
+            let isPinghe = false;
+            if (pingheScore >= 50) {
+                const otherMains = mainConstitutions.filter(t => t !== '平和质');
+                if (otherMains.length === 0) { isPinghe = true; mainConstitutions = ['平和质']; }
+            }
+            if (!isPinghe && mainConstitutions.length === 0) mainConstitutions.push('平和质（倾向）');
+
+            /* ===== 4. 生成大字摘要（优化后） ===== */
+            const levelMap = {};
+            Object.keys(constitutionResults).forEach(type => {
+                const s = constitutionResults[type].convertedScore;
+                if (type === '平和质') {
+                    // 平和质的三级分类细化
+                    levelMap[type] = s >= 70 ? '平和（优秀）' : s >= 50 ? '平和（良好）' : '平和倾向';
+                } else {
+                    if (s >= CUTOFF_SEVERE) levelMap[type] = '重度';
+                    else if (s >= CUTOFF_MAIN) levelMap[type] = '中度';
+                    else if (s >= CUTOFF_TEND) levelMap[type] = '轻度倾向';
+                }
+            });
+
+            // 分类所有体质（单独处理平和质）
+            const bucket = { 重度: [], 中度: [], 轻度倾向: [], 平和: [] };
+            Object.keys(levelMap).forEach(type => {
+                if (type === '平和质') {
+                    // 平和质无论等级如何，都归入"平和"桶
+                    bucket['平和'].push(`${type}（${levelMap[type]}）`);
+                } else if (bucket.hasOwnProperty(levelMap[type])) {
+                    bucket[levelMap[type]].push(type);
+                }
+            });
+
+            // 构建结果文本（带颜色样式）
+            let bigTitle = '';
+            let line2 = '';
+            let line3 = '';
+
+            // 有重度体质
+            if (bucket['重度'].length > 0) {
+                bigTitle = `<span class="text-red-700 font-bold">重点提醒：您有${bucket['重度'].length}种体质呈重度偏颇</span>`;
+                line2 = `<span class="text-gray-700">重度偏颇：</span><span class="text-red-600">${bucket['重度'].join('、')}</span><span class="text-gray-700">，建议尽快调理</span>`;
+                
+                // 显示中度体质（若有）
+                if (bucket['中度'].length > 0) {
+                    line3 = `<span class="text-gray-700">中度偏颇：</span><span class="text-amber-600">${bucket['中度'].join('、')}</span><span class="text-gray-700">，请注意生活作息</span>`;
+                } else if (bucket['轻度倾向'].length > 0) {
+                    line3 = `<span class="text-gray-700">轻度倾向：</span><span class="text-green-600">${bucket['轻度倾向'].join('、')}</span><span class="text-gray-700">，可作为日常保健参考</span>`;
+                }
+            } 
+            // 没有重度但有中度体质
+            else if (bucket['中度'].length > 0) {
+                bigTitle = `<span class="text-amber-700 font-bold">您有${bucket['中度'].length}种体质呈中度偏颇，需关注</span>`;
+                line2 = `<span class="text-gray-700">中度倾向：</span><span class="text-amber-600">${bucket['中度'].join('、')}</span><span class="text-gray-700">，建议及早调整生活方式</span>`;
+                
+                if (bucket['轻度倾向'].length > 0) {
+                    line3 = `<span class="text-gray-700">轻度倾向：</span><span class="text-green-600">${bucket['轻度倾向'].join('、')}</span><span class="text-gray-700">，可做日常微调</span>`;
+                }
+            } 
+            // 只有轻度倾向
+            else if (bucket['轻度倾向'].length > 0) {
+                bigTitle = `<span class="text-green-700 font-bold">恭喜！您的平和质状态：${bucket['平和'][0].replace('平和质（', '').replace('）', '')}</span>`;
+                line2 = `<span class="text-gray-700">轻度倾向：</span><span class="text-green-600">${bucket['轻度倾向'].join('、')}</span><span class="text-gray-700">，通过饮食、运动即可改善</span>`;
+            } 
+            // 纯平和体质
+            else {
+                bigTitle = `<span class="text-green-700 font-bold">恭喜！您的平和质状态：${bucket['平和'][0].replace('平和质（', '').replace('）', '')}</span>`;
+                line2 = `<span class="text-gray-700">建议：均衡饮食、规律作息、适度运动，每年可复测一次</span>`;
+            }
+
+            // 组合所有行，过滤空值
+            const lines = [bigTitle, line2, line3].filter(Boolean);
+            let summaryHtml = lines.join('<br>');
+
+            // 添加区分度提示
+            if (isLowDev) {
+                summaryHtml += '<br><span class="text-amber-700 text-sm">提示：回答区分度较低，结果仅供参考。</span>';
+            }
+
+            resultSummary.innerHTML = summaryHtml;
+
+            /* ===== 5. 体质详情卡片生成 ===== */
+            constitutionDetails.innerHTML = '';
+            Object.keys(constitutionResults).forEach(type => {
+                const res = constitutionResults[type];
+                if (res.level === '正常' && !res.isMain) return;
+                const intro = constitutionIntro[type];
+                let levelText = res.level;
+                if (type === '平和质') {
+                    // 平和质等级细化显示
+                    levelText = res.convertedScore >= 70 ? '非常平和' : res.convertedScore >= 50 ? '平和' : '基本平和';
+                }
+                const card = document.createElement('div');
+                card.className = `${res.isMain ? 'border-2 border-primary' : 'border border-secondary/30'} rounded-lg p-4 bg-light/50 mx-auto max-w-sm`;
+                card.innerHTML = `
+                <h3 class="text-[clamp(1rem,3vw,1.2rem)] font-kai font-bold ${res.isMain ? 'text-primary' : 'text-dark/80'} mb-2 text-center">${type}（转化分：${res.convertedScore}分）</h3>
+                <p class="mb-3 text-xs md:text-sm italic text-center">${levelText}</p>
+                <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">体质介绍：</h4>
+                <p class="mb-3 leading-relaxed text-sm md:text-base text-center">${intro.介绍}</p>
+                <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">主要特征：</h4>
+                <p class="leading-relaxed text-sm md:text-base text-center">${intro.特征}</p>
+                <h4 class="font-kai font-bold text-dark/90 mb-1 text-sm md:text-base text-center">调理建议：</h4>
+                <p class="leading-relaxed text-sm md:text-base text-center">${intro.调理建议}</p>
+                `;
+                constitutionDetails.appendChild(card);
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化背景效果
+            const bgOverlay = document.querySelectorAll('.bg-overlay');
+            bgOverlay.forEach(el => {
+                el.classList.add('transition-all', 'duration-700');
+            });
+        });
+    </script>
 </body>
 </html>
